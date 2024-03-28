@@ -14,54 +14,69 @@ import (
 	"github.com/fsnotify/fsnotify"
 )
 
-var dir = flag.String("dir", ".", "serve spesific folder.")
+var dir = flag.String("dir", ".", "serve specific folder.")
+var port = flag.String("port", "9000", "specific port")
+
+func main() {
+	flag.Parse()
+
+	if flag.NFlag() == 0 && (flag.Arg(0) == "-h" || flag.Arg(0) == "--help") {
+		flag.Usage()
+		os.Exit(0)
+	}
+
+	if !hasHTMLFilesInDir(*dir) {
+		fmt.Println("No .html files found in the directory")
+		return
+	}
+
+	go startHTTPServer()
+
+	watcher := setupFileWatcher()
+	defer watcher.Close()
+
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
+	<-stop
+	log.Println("Shutting down...")
+}
+
+func startHTTPServer() {
+	http.HandleFunc("/", handler)
+
+	fmt.Printf("Hello onii-chan! Your server running on localhost:%s nyaa~\n\n", *port)
+	log.Fatal(http.ListenAndServe(":"+*port, nil))
+}
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("%s %s", r.Method, r.URL.Path)
 
-	urlPath := r.URL.Path
+	path := r.URL.Path
 
-	if urlPath == "" || urlPath == "/" {
-		http.ServeFile(w, r, *dir+"/index.html")
+	if path == "" || path == "/" || strings.HasSuffix(path, "/") {
+		path = filepath.Join(*dir, path, "index.html")
+		http.ServeFile(w, r, path)
 		return
 	}
 
-	if !strings.Contains(urlPath, ".") {
-		urlPath += ".html"
+	if !strings.Contains(path, ".") {
+		path += ".html"
 	}
 
-	http.ServeFile(w, r, *dir+urlPath)
+	http.ServeFile(w, r, *dir+path)
 }
 
-func main() {
-	port := flag.String("port", "9000", "spesific port")
-
-	flag.Parse()
-
-	if flag.NFlag() == 0 && (flag.Arg(0) == "-h" || flag.Arg(0) == "--help") {
-		fmt.Fprintf(os.Stderr, "Usage: %s [options]\n", os.Args[0])
-		fmt.Fprintf(os.Stderr, "Options:\n")
-		flag.PrintDefaults()
-		os.Exit(0)
-	}
-
-	fmt.Printf("Hello onii-chan! Your connection at localhost:%s nyaa~ \n", *port)
-	go func() {
-		http.HandleFunc("/", handler)
-		log.Fatal(http.ListenAndServe(":"+*port, nil))
-	}()
-
+func setupFileWatcher() *fsnotify.Watcher {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer watcher.Close()
 
 	err = filepath.Walk(*dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
-		if !info.IsDir() {
+		if !info.IsDir() && filepath.Ext(path) == ".html" {
 			err = watcher.Add(path)
 			if err != nil {
 				log.Println(err)
@@ -84,8 +99,14 @@ func main() {
 		}
 	}()
 
-	stop := make(chan os.Signal, 1)
-	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
-	<-stop
-	log.Println("Shutting down...")
+	return watcher
+}
+
+func hasHTMLFilesInDir(dir string) bool {
+	files, err := filepath.Glob(filepath.Join(dir, "*.html"))
+	if err != nil {
+		log.Println(err)
+		return false
+	}
+	return len(files) > 0
 }
