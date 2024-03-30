@@ -1,8 +1,6 @@
-package main
+package webserver
 
 import (
-	"flag"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -14,25 +12,21 @@ import (
 	"github.com/fsnotify/fsnotify"
 )
 
-var dir = flag.String("dir", ".", "serve specific folder.")
-var port = flag.String("port", "9000", "specific port")
+type New struct {
+	Dir  string
+	Port string
+	Log  bool
+}
 
-func main() {
-	flag.Parse()
-
-	if flag.NFlag() == 0 && (flag.Arg(0) == "-h" || flag.Arg(0) == "--help") {
-		flag.Usage()
-		os.Exit(0)
-	}
-
-	if !hasHTMLFilesInDir(*dir) {
-		fmt.Println("No .html files found in the directory")
+func (s *New) Start() {
+	if !hasHTMLFilesInDir(s.Dir) {
+		log.Println("No .html files found in the directory")
 		return
 	}
 
-	go startHTTPServer()
+	go s.startHTTPServer()
 
-	watcher := setupFileWatcher()
+	watcher := setupFileWatcher(s.Dir)
 	defer watcher.Close()
 
 	stop := make(chan os.Signal, 1)
@@ -41,20 +35,22 @@ func main() {
 	log.Println("Shutting down...")
 }
 
-func startHTTPServer() {
-	http.HandleFunc("/", handler)
+func (s *New) startHTTPServer() {
+	http.HandleFunc("/", s.handler)
 
-	fmt.Printf("Hello onii-chan! Your server running on localhost:%s nyaa~\n\n", *port)
-	log.Fatal(http.ListenAndServe(":"+*port, nil))
+	log.Printf("Hello Onii-chan! Server running on localhost:%s\n\n", s.Port)
+	log.Fatal(http.ListenAndServe(":"+s.Port, nil))
 }
 
-func handler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("%s %s", r.Method, r.URL.Path)
+func (s *New) handler(w http.ResponseWriter, r *http.Request) {
+	if s.Log {
+		log.Printf("%s %s", r.Method, r.URL.Path)
+	}
 
 	path := r.URL.Path
 
 	if path == "" || path == "/" || strings.HasSuffix(path, "/") {
-		path = filepath.Join(*dir, path, "index.html")
+		path = filepath.Join(s.Dir, path, "index.html")
 		http.ServeFile(w, r, path)
 		return
 	}
@@ -63,16 +59,16 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		path += ".html"
 	}
 
-	http.ServeFile(w, r, *dir+path)
+	http.ServeFile(w, r, filepath.Join(s.Dir, path))
 }
 
-func setupFileWatcher() *fsnotify.Watcher {
+func setupFileWatcher(dir string) *fsnotify.Watcher {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = filepath.Walk(*dir, func(path string, info os.FileInfo, err error) error {
+	err = filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
