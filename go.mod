@@ -1,4 +1,4 @@
-module github.com/nazhard/web-server
+module github.com/nazhard/serve
 
 go 1.21.6
 

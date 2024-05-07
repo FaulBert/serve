@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 
-	"github.com/nazhard/web-server"
+	"github.com/nazhard/serve"
 )
 
 func main() {
@@ -13,10 +13,11 @@ func main() {
 
 	flag.Parse()
 
-	server := &webserver.New{
+	server := &serve.New{
 		Dir:  *dir,
 		Port: *port,
 		Log:  *log,
 	}
+
 	server.Start()
 }

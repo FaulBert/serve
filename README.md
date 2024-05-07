@@ -13,7 +13,7 @@
 ### Installation
 
 ```
-go install github.com/nazhard/web-server/cmd/serve@latest
+go install github.com/nazhard/serve/cmd/serve@latest
 ```
 
 ### Usage
@@ -34,7 +34,7 @@ $ serve -dir dist -port 8080
 ### Installation
 
 ```sh
-go get github.com/nazhard/web-server@latest
+go get github.com/nazhard/serve@latest
 ```
 
 ### Usage
@@ -43,7 +43,7 @@ go get github.com/nazhard/web-server@latest
 package main
 
 import (
-    "github.com/nazhard/web-server"
+    "github.com/nazhard/serve"
 )
 
 func main() {

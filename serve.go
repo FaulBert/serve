@@ -1,4 +1,4 @@
-package webserver
+package serve
 
 import (
 	"log"
@@ -16,6 +16,7 @@ type New struct {
 	Dir  string
 	Port string
 	Log  bool
+	// Greeting string
 }
 
 func (s *New) Start() {
@@ -72,12 +73,14 @@ func setupFileWatcher(dir string) *fsnotify.Watcher {
 		if err != nil {
 			return err
 		}
+
 		if !info.IsDir() && filepath.Ext(path) == ".html" {
 			err = watcher.Add(path)
 			if err != nil {
 				log.Println(err)
 			}
 		}
+
 		return nil
 	})
 	if err != nil {
@@ -104,5 +107,6 @@ func hasHTMLFilesInDir(dir string) bool {
 		log.Println(err)
 		return false
 	}
+
 	return len(files) > 0
 }
