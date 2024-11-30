@@ -1,8 +1,8 @@
 <span align=center>
 
-# serve
+# Usagi Serve
     
-###### serve -port 8080
+###### usagi -port 8080
 
 </span>
 
@@ -13,19 +13,19 @@
 ### Installation
 
 ```
-go install github.com/nazhard/serve/cmd/serve@latest
+go install github.com/nazhard/usagi-serve/cmd/usagi@latest
 ```
 
 ### Usage
 
 ```sh
-$ serve -log=false
+$ usagi -log=false
 # serve current directory and no cute log
 
-$ serve -h
+$ usagi -h
 # print help
 
-$ serve -dir dist -port 8080
+$ usagi -dir dist -port 8080
 # serve files inside "dir" and use 8080 as port
 ```
 
@@ -34,7 +34,7 @@ $ serve -dir dist -port 8080
 ### Installation
 
 ```sh
-go get github.com/nazhard/serve@latest
+go get github.com/nazhard/usagi-serve@latest
 ```
 
 ### Usage
@@ -43,11 +43,11 @@ go get github.com/nazhard/serve@latest
 package main
 
 import (
-    "github.com/nazhard/serve"
+    "github.com/nazhard/usagi-serve"
 )
 
 func main() {
-    server := &webserver.New{
+    server := &usagi.Jump{
         Dir:  "path/to/static/assets",
         Port: "8080",
         Log:  true,
@@ -59,11 +59,14 @@ func main() {
 
 ## Why?
 
-Just for test purposes.
-It's faster than `pnpm preview` you know.
+I don't know. Why not?
 
-My use case:
-- pnpm build
-- serve -dir dist
-
-Yeah, just to see if everything is okay.
+old reason :
+> Just for test purposes.
+> It's faster than `pnpm preview` you know.
+> 
+> My use case:
+> - pnpm build
+> - serve -dir dist
+>
+> Yeah, just to see if everything is okay.

@@ -1,4 +1,4 @@
-module github.com/nazhard/serve
+module github.com/nazhard/usagi-serve
 
 go 1.21.6
 

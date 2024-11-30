@@ -3,17 +3,17 @@ package main
 import (
 	"flag"
 
-	"github.com/nazhard/serve"
+	"github.com/nazhard/usagi-serve"
 )
 
 func main() {
 	dir := flag.String("dir", ".", "set spesific directory to serve")
-	port := flag.String("port", "9000", "set spesific port")
+	port := flag.String("port", "8000", "set spesific port")
 	log := flag.Bool("log", true, "doesn't print log if set to false")
 
 	flag.Parse()
 
-	server := &serve.New{
+	server := &usagi.Jump{
 		Dir:  *dir,
 		Port: *port,
 		Log:  *log,
